@@ -1,5 +1,6 @@
 import datetime
 import random
+
 from phase2.country import Country, get_country, get_random_country
 
 MAX_GUESSES = 5
