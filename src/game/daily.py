@@ -1,4 +1,4 @@
-from country import Country, get_country, get_random_country
+from phase2.country import Country, get_country, get_random_country
 
 
 def get_daily_country() -> Country:
