@@ -21,7 +21,7 @@ class TempCountry(Country):
 
 @pytest.fixture
 def round_stats() -> RoundStats:
-    return RoundStats()
+    return RoundStats(mode="daily")
 
 
 @pytest.fixture

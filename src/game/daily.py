@@ -11,15 +11,17 @@ MAX_GUESSES = 5
 class RoundStats:
     guesses: int = 0
     max_guesses: int
+    mode: str
     round_start: datetime
     guess_graded: Event[str]
     game_ended: Event[bool]
     round_time: timedelta
 
-    def __init__(self):
+    def __init__(self, mode: str):
         self.guesses = 0
         self.max_guesses = MAX_GUESSES
         self.round_start = datetime.now(timezone.utc)
+        self.mode = mode
 
         # TODO: Replace with data type containing actual guess feedback
         self.guess_graded = Event[str]()
@@ -168,4 +170,19 @@ def end_game(won: bool, round_stats: RoundStats):
     on to be processed in statistics.py, and show a breakdown of this game's
     stats to the user
     """
-    pass
+
+    # TODO (milestone 2): Get the user id of the currently playing user, if there is one
+
+    # TODO (milestone 3): Add in the number of survival rounds completed
+
+    # TODO (milestone 2): Add round to the rounds database properly
+    """round_statistics_repo = RoundStatisticsRepository()
+    round_statistics_repo.add_round(
+        time_to_complete=round_stats.round_time,
+        won=won,
+        guesses=round_stats.guesses,
+        mode=round_stats.mode,
+    )"""
+
+    # Show game stats in UI
+    round_stats.game_ended.emit(won)

@@ -20,7 +20,7 @@ game
 
 
 def content():
-    round_stats = RoundStats()
+    round_stats = RoundStats(mode="daily")
 
     options = []
     with open("src/game/countries.json") as file:
@@ -46,10 +46,6 @@ def content():
         if guess_input.validate():
             handle_guess(guess_input.value, round_stats)
             guess_input.value = ""
-
-            # TODO: Move this emit into game_end()
-            if len(feedback.rows) == 6:
-                round_stats.game_ended.emit(False)
 
     # TODO: Add actual feedback instead of placeholder data
     @round_stats.guess_graded.subscribe
