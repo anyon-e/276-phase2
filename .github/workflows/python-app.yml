@@ -46,22 +46,5 @@ jobs:
         with:
           name: pytest-results
           path: cov.xml
-
-  coverage:
-    name: Test Coverage
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download coverage results
-        uses: actions/download-artifact@v5
-        with:
-          name: pytest-results
-      - name: Get coverage
-        uses: orgoro/coverage@v3.2
-        with:
-          coverageFile: cov.xml
-          token: ${{ secrets.GITHUB_TOKEN }}
-          thresholdAll: 0.5
-          thresholdModified: 0.6
         
 

@@ -1,0 +1,30 @@
+name: Report Coverage
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
+
+permissions:
+  actions: read
+  contents: read
+  pull-requests: write
+
+jobs:
+  coverage-report:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: cov.xml
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Test Coverage
+        uses: orgoro/coverage@v3.2
+        with:
+            coverageFile: cov.xml
+            token: ${{ secrets.GITHUB_TOKEN }}
+            thresholdAll: 0.5
+            thresholdModified: 0.6
