@@ -27,8 +27,9 @@ class LeaderboardEntry(Base):
 
 class Leaderboard:
 
-    def __init__(self, session: Session):
+    def __init__(self, session: Session, stats_repo = None):
         self.session = session
+        self.stats_repo = stats_repo
 
     async def sync_user_entry(self, user_id: int) -> LeaderboardEntry | None:
         """

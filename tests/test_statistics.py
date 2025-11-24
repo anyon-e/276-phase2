@@ -1,0 +1,59 @@
+import pytest
+from sqlalchemy import create_engine, select
+from sqlalchemy.orm import Session
+
+from datetime import date, timedelta
+from phase2.statistics import Base as StatsBase, RoundStatistics, RoundStatisticsRepository
+from phase2.leaderboard import Base as LeaderboardBase, LeaderboardEntry
+
+@pytest.fixture(scope="function")
+def engine():
+    engine = create_engine("sqlite:///:memory:?check_same_thread=False")
+    StatsBase.metadata.create_all(bind=engine)
+    LeaderboardBase.metadata.create_all(bind=engine)
+    yield engine
+    engine.dispose()
+
+@pytest.fixture(scope="function")
+def session(engine):
+    conn = engine.connect()
+    conn.begin()
+    db = Session(bind=conn)
+    yield db
+    db.rollback()
+    conn.close()
+
+@pytest.fixture(scope="function")
+def repo(session):
+    yield RoundStatisticsRepository(session)
+    
+def test_add_round(repo, session):
+    user_id = 1
+    today = date(2025, 11, 20)
+
+    result = repo.add_round(user_id=user_id,time_to_complete_in_seconds=timedelta(seconds=30), won=True, guesses=4, mode="daily", daily_date=today, survival_streak=0)
+    assert isinstance(result, RoundStatistics)
+    assert result.user_id == user_id
+    assert result.mode == "daily"
+    assert result.daily_date == today
+    assert result.time_to_complete_in_seconds == 30
+
+    statement = select(LeaderboardEntry).where(LeaderboardEntry.user_id == user_id)
+    entry = session.execute(statement).scalars().one()
+
+    assert entry.daily_streak == 1
+    assert entry.longest_daily_streak == 1
+    assert entry.average_daily_guesses == 4
+    assert entry.average_daily_time == 30
+    
+def test_get_daily_round(session: Session):
+    repo = RoundStatisticsRepository(session)
+    today = date(2024, 11, 20)
+
+    created = repo.add_round(user_id=1,time_to_complete_in_seconds=timedelta(seconds=75),won=True,guesses=4,mode="daily",daily_date=today, survival_streak=0,)
+    fetched = repo.get_daily_round(user_id=1, day=today)
+
+    assert fetched is not None
+    assert fetched.id == created.id
+    assert fetched.user_id == 1
+    assert fetched.daily_date == today
