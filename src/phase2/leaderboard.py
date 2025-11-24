@@ -1,8 +1,7 @@
 from pydantic import BaseModel
-from sqlalchemy import Float, Integer, Sequence, select
+from sqlalchemy import Float, Integer, Sequence, select, update
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Mapped, Session, declarative_base, mapped_column, select, update
-from .statistics import RoundStatistics
+from sqlalchemy.orm import Mapped, Session, declarative_base, mapped_column
 
 Base = declarative_base()
 
@@ -64,7 +63,7 @@ class Leaderboard:
                 average_daily_guesses=stats.average_daily_guesses,
                 average_daily_time=stats.average_daily_time,
                 longest_survival_streak=stats.longest_survival_streak,
-                high_score=stats.best_score,
+                score = stats.score
             )
             self.session.add(entry)
 
@@ -76,8 +75,8 @@ class Leaderboard:
             entry.average_daily_time = stats.average_daily_time
             entry.longest_survival_streak = stats.longest_survival_streak
 
-            if stats.best_score > entry.high_score:
-                entry.high_score = stats.best_score
+            if stats.score > entry.score:  # ⬅️ changed
+                entry.score = stats.score 
 
         try:
             self.session.commit()
@@ -108,29 +107,65 @@ class Leaderboard:
         return users
 
 
-    async def get_top_10_entry(self, position: int) -> LeaderboardEntry:
+    async def get_top_10_entries(self) -> list[LeaderboardEntry]:
         """
         Gets top 10 leaderboard entries
         """
+        stmt = (
+            select(LeaderboardEntry)
+            .order_by(LeaderboardEntry.score.desc())
+            .limit(10)
+        )
+
+        top10 = self.session.execute(stmt).scalars().all()
+
+        return top10
+
+
 
     async def get_250_entries(self, position: int) -> list[LeaderboardEntry]:
         """
         Get 250 leaderboard entries from the given position (from the top)
         """
-        pass
+        offset_value = max(position - 1, 0)  # convert to 0-based offset
+
+        stmt = (
+            select(LeaderboardEntry)
+            .order_by(LeaderboardEntry.score.desc())
+            .offset(offset_value)
+            .limit(250)
+        )
+
+        return self.session.execute(stmt).scalars().all()
+    
+
 
     async def get_friend_entries(self, user_id: int) -> list[LeaderboardEntry]:
         """
         Get all leaderboard entries for the given user's friends only
         (including the given user)
         """
+
+        #  TODO this one's a bit harder so still working on the logic for it
+
         pass
 
     async def get_score(self, user_id: int) -> int:
         """
         calculates user score
         """
-        return 100
+        entry = (
+            self.session.execute(
+                select(LeaderboardEntry).where(LeaderboardEntry.user_id == user_id)
+            )
+            .scalars()
+            .first()
+        )
+
+        if entry is None:
+            return 0
+
+        return entry.score
 
  
 class LeaderboardEntrySchema(BaseModel):
