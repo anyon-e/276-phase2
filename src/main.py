@@ -1,7 +1,8 @@
 import logging
 import os
 
-from nicegui import ui
+from admin import main as admin
+from nicegui import app, ui
 from nicegui.events import KeyEventArguments
 
 from game import game_ui
@@ -67,4 +68,5 @@ def index_page():
     game_ui.content()
 
 
+app.include_router(admin.router)
 ui.run(title="CMPT276 Project", dark=None, port=int(os.getenv("WEB_PORT", 8080)))
