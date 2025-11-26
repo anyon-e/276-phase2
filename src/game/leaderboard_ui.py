@@ -1,6 +1,6 @@
 from typing import Any, Dict, List
 
-import httpx # Will update to getting directly from DB once wired
+import httpx  # Will update to getting directly from DB once wired
 from nicegui import ui
 
 API_BASE_URL = "http://localhost:8000" 

@@ -5,10 +5,11 @@ import pytest
 from nicegui import ui
 from nicegui.testing import User
 
-pytest_plugins = ["nicegui.testing.user_plugin"]
-
 from game import leaderboard_ui
 from game.leaderboard_ui import fetch_leaderboard
+
+pytest_plugins = ["nicegui.testing.user_plugin"]
+
 
 
 # GUI TESTS
@@ -109,7 +110,7 @@ class DummyClient:
         assert self._response is not None
         return self._response
 
-
+# Will update these when the DB is wired
 def test_fetch_leaderboard_with_backend(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
