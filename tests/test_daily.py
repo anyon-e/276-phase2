@@ -34,6 +34,15 @@ def mocked_end_game():
     patcher.stop()
 
 
+@pytest.fixture
+def mocked_stats_repo():
+    patcher = patch("game.daily.get_statistics_repository")
+    patch.object(RoundStats, "add_round")
+    mock = patcher.start()
+    yield mock
+    patcher.stop()
+
+
 @pytest.mark.noautofixt
 def test_get_daily_country_same_country_for_same_day():
     first_call = get_daily_country()
@@ -97,7 +106,7 @@ def test_handle_guess_limit(round_stats, mocked_get_daily_country, mocked_end_ga
 
 # endregion
 # region end_game() tests
-def test_win_game(round_stats):
+def test_win_game(round_stats, mocked_stats_repo):
     round_stats.game_ended.emit = MagicMock()
     round_stats.end_round = MagicMock()
 
@@ -107,7 +116,7 @@ def test_win_game(round_stats):
     round_stats.end_round.assert_called_once()
 
 
-def test_lose_game(round_stats):
+def test_lose_game(round_stats, mocked_stats_repo):
     round_stats.game_ended.emit = MagicMock()
     round_stats.end_round = MagicMock()
 

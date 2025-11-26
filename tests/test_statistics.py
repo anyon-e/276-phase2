@@ -1,20 +1,19 @@
 from datetime import date, timedelta
 
 import pytest
+from shared.database import Base
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session
 
-from phase2.leaderboard import Base as LeaderboardBase
 from phase2.leaderboard import LeaderboardEntry
-from phase2.statistics import Base as StatsBase
+from phase2.round import RoundStats
 from phase2.statistics import RoundStatistics, RoundStatisticsRepository
 
 
 @pytest.fixture(scope="function")
 def engine():
     engine = create_engine("sqlite:///:memory:?check_same_thread=False")
-    StatsBase.metadata.create_all(bind=engine)
-    LeaderboardBase.metadata.create_all(bind=engine)
+    Base.metadata.create_all(bind=engine)
     yield engine
     engine.dispose()
 
@@ -42,14 +41,13 @@ def test_add_round(repo, session):
     user_id = 1
     today = date(2025, 11, 20)
 
-    result = repo.add_round(
-        user_id=user_id,
-        round_length=timedelta(seconds=30),
-        won=True,
-        guesses=4,
-        mode="daily",
-        daily_date=today,
-    )
+    round_stats = RoundStats(mode="daily")
+    round_stats.end_round()
+    round_stats.user_id = user_id
+    round_stats.won = True
+    round_stats.guesses = 4
+
+    result = repo.add_round()
     assert isinstance(result, RoundStatistics)
     assert result.user_id == user_id
     assert result.mode == "daily"
