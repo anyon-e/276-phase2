@@ -180,8 +180,8 @@ def test_fetch_leaderboard_with_fallback_data(
 def test_fetch_friends_leaderboard(monkeypatch: pytest.MonkeyPatch) -> None:
     from shared import database
 
-    from game import leaderboard_ui
     from game.leaderboard_ui import fetch_friends_leaderboard
+    from phase2 import leaderboard
 
     fake_user_id = 42
     fake_rows = [
@@ -199,14 +199,14 @@ def test_fetch_friends_leaderboard(monkeypatch: pytest.MonkeyPatch) -> None:
 
     # Mock Leaderboard class to return the fake instance
     monkeypatch.setattr(
-        leaderboard_ui,
+        leaderboard,
         "Leaderboard",
         MagicMock(return_value=mock_lb_instance)
     )
 
     result = fetch_friends_leaderboard(fake_user_id)
 
-    leaderboard_ui.Leaderboard.assert_called_once_with(mock_db)
+    leaderboard.Leaderboard.assert_called_once_with(mock_db)
 
     # get_friends_entries(user_id) was called
     mock_lb_instance.get_friends_entries.assert_called_once_with(fake_user_id)
