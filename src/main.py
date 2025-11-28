@@ -73,8 +73,8 @@ def index_page():
 
 
 @ui.page("/leaderboard")
-async def _():
-    await leaderboard_page()
+def _():
+    leaderboard_page()
 
 
 ui.run(title="CMPT276 Project", dark=None)

@@ -177,7 +177,7 @@ def test_fetch_leaderboard_with_fallback_data(
 
 
 # Non-GUI test for fetch_friends_leaderboard
-async def test_fetch_friends_leaderboard(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_fetch_friends_leaderboard(monkeypatch: pytest.MonkeyPatch) -> None:
     from shared import database
 
     from game.leaderboard_ui import fetch_friends_leaderboard
@@ -204,7 +204,7 @@ async def test_fetch_friends_leaderboard(monkeypatch: pytest.MonkeyPatch) -> Non
         MagicMock(return_value=mock_lb_instance)
     )
 
-    result = await fetch_friends_leaderboard(fake_user_id)
+    result = fetch_friends_leaderboard(fake_user_id)
 
     leaderboard.Leaderboard.assert_called_once_with(mock_db)
 

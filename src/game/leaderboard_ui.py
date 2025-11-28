@@ -79,7 +79,7 @@ def fetch_leaderboard() -> List[Dict[str, Any]]:
     return rows
 
 
-async def leaderboard_page() -> None:
+def leaderboard_page() -> None:
     ui.label("Leaderboard").classes("text-3xl font-bold mb-4")
 
     columns = [
@@ -108,16 +108,16 @@ async def leaderboard_page() -> None:
     def load_data():
         table.rows = fetch_leaderboard()
 
-    async def load_friends_leaderboard():
+    def load_friends_leaderboard():
         user_id = 1
-        new_rows = await fetch_friends_leaderboard(user_id)
+        new_rows = fetch_friends_leaderboard(user_id)
         print(new_rows)
         table.rows = new_rows
 
     ui.button("Refresh", on_click=load_data).classes("mt-4")
     ui.button("Load friends leaderboard", on_click=load_friends_leaderboard)
 
-async def fetch_friends_leaderboard(user_id: int | None):
+def fetch_friends_leaderboard(user_id: int | None):
     """Fetch friends-only leaderboard data using Leaderboard class."""
     print("called")
     if not user_id:
@@ -125,7 +125,7 @@ async def fetch_friends_leaderboard(user_id: int | None):
 
     try:
         lb = get_leaderboard_repository()
-        entries = await lb.get_friends_entries(user_id)
+        entries = lb.get_friends_entries(user_id)
     except AttributeError:
         entries = [{
             "entry_id": 3,

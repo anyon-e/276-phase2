@@ -137,7 +137,7 @@ class Leaderboard:
 
         return self.session.execute(stmt).scalars().all()
 
-    async def get_friends_entries(self, user_id: int) -> list[LeaderboardEntry]:
+    def get_friends_entries(self, user_id: int) -> list[LeaderboardEntry]:
         """
         Get all leaderboard entries for the given user's friends only
         (including the given user)
