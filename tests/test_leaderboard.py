@@ -241,7 +241,7 @@ async def test_get_friends_entries_returns_sorted_results(session):
     db.commit()
 
     # Act
-    entries = await leaderboard.get_friends_entries(1)
+    entries = leaderboard.get_friends_entries(1)
 
     # Assert
     assert len(entries) == 3
