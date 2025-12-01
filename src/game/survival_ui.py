@@ -274,3 +274,6 @@ def survival_content():
 
         # Navigation button
         ui.button("Back to Menu", on_click=lambda: ui.navigate.to("/"))
+
+if __name__ == "__main__":
+    survival_content()  # or start the UI server here
