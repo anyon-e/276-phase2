@@ -2,7 +2,7 @@ from datetime import date, timedelta
 
 from fastapi import Depends
 from shared.database import Base, get_db
-from sqlalchemy import select
+from sqlalchemy import ForeignKey, select
 from sqlalchemy.orm import Mapped, Session, mapped_column
 from sqlalchemy.types import Boolean, Date, Integer, Interval, String
 
@@ -13,7 +13,7 @@ class RoundStatistics(Base):
     __tablename__ = "round_statistics"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)  # entry id
-    user_id: Mapped[int] = mapped_column(Integer, nullable=False)  # user id to users table
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"))  # user id to users table
     round_length: Mapped[timedelta] = mapped_column(Interval, nullable=False)  # length of round
     won: Mapped[bool] = mapped_column(Boolean, nullable=False)  # won or lost
     guesses: Mapped[int] = mapped_column(
@@ -75,9 +75,10 @@ class RoundStatisticsRepository:
         )
 
         self.session.add(round_row)  # log the round stats
+        self.session.commit()
+
         await self.lb_repo.sync_user_entry(round_stats.user_id)
 
-        self.session.commit()
         return round_row
 
     def get_daily_round(self, user_id: int, day: date) -> RoundStatistics:

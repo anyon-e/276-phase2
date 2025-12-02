@@ -3,9 +3,10 @@ from datetime import timedelta
 from fastapi import Depends
 from pydantic import BaseModel
 from shared.database import Base, get_db
-from sqlalchemy import Integer, Interval, Sequence, select
+from sqlalchemy import ForeignKey, Integer, Interval, Sequence, select
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Mapped, Session, mapped_column
+from sqlalchemy.orm import Mapped, Session, mapped_column, relationship
+from user_service.models.user import User
 
 from phase2.friends import Friendship
 from phase2.statistics import RoundStatisticsRepository
@@ -16,9 +17,9 @@ class LeaderboardEntry(Base):
 
     entry_id: Mapped[int] = mapped_column(Integer, Sequence("entry_id_seq"), primary_key=True)
     user_id: Mapped[int] = mapped_column(
-        Integer, nullable=False
+        Integer, ForeignKey("users.id")
     )  # ForeignKey(user_id). once users table is linked
-
+    user: Mapped["User"] = relationship()
     daily_streak: Mapped[int] = mapped_column(
         Integer, default=0
     )  # current streak of dailies completed
@@ -64,8 +65,10 @@ class LeaderboardRepository:
 
         # If it doesn't exist, create it
         if entry is None:
+            user = self.session.execute(select(User).where(User.id == stats.user_id)).first()
             entry = LeaderboardEntry(
                 user_id=stats.user_id,
+                user=user,
                 daily_streak=stats.daily_streak,
                 longest_daily_streak=stats.longest_daily_streak,
                 average_daily_guesses=stats.average_daily_guesses,
@@ -194,8 +197,23 @@ def get_leaderboard_repository(
 class LeaderboardEntrySchema(BaseModel):
     id: int
     user_id: int
+    user_name: str
     daily_streak: int
     longest_daily_streak: int
     average_daily_guesses: int
     average_daily_time: timedelta
     longest_survival_streak: int
+
+    @classmethod
+    def from_db_model(cls, entry: LeaderboardEntry) -> "LeaderboardEntrySchema":
+        """Create a LeaderboardEntrySchema from a LeaderboardEntry"""
+        return cls(
+            id=entry.entry_id,
+            user_id=entry.user_id,
+            user_name=entry.user.name,
+            daily_streak=entry.daily_streak,
+            longest_daily_streak=entry.longest_daily_streak,
+            average_daily_guesses=entry.average_daily_guesses,
+            average_daily_time=entry.average_daily_time,
+            longest_survival_streak=entry.longest_survival_streak,
+        )

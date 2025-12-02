@@ -5,18 +5,25 @@ from fastapi import Depends
 from nicegui import APIRouter, ui
 
 from game import repos
-from phase2.leaderboard import LeaderboardRepository, get_leaderboard_repository
+from phase2.leaderboard import (
+    LeaderboardEntrySchema,
+    LeaderboardRepository,
+    get_leaderboard_repository,
+)
 
 logger = logging.getLogger("game.leaderboard_ui")
 router = APIRouter(prefix="/leaderboard")
 
 
-async def fetch_leaderboard() -> List[Dict[str, Any]]:
+async def fetch_leaderboard():
     """Try to fetch leaderboard from backend; fallback to fake data."""
     leaderboard_repo: LeaderboardRepository = repos["leaderboard_repo"]
-    entries = await leaderboard_repo.get_all()
+    entry_models = await leaderboard_repo.get_all()
 
-    if entries:
+    entries = []
+    if entry_models:
+        for entry in entry_models:
+            entries.append(LeaderboardEntrySchema.from_db_model(entry).model_dump())
         return entries
 
     # Fake data
